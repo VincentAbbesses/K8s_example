@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fastapi-deployment
+  labels:
+    app: fastapi
+spec:
+  selector:
+    matchLabels:
+      app: fastapi
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: fastapi
+    spec:
+      containers:
+        - name: nginx
+          image: dock4vincent/k8s-dst-eval-fastapi:1.0.3           
+          command: ["uvicorn"] 
+          args: ["main:app", "--host", "0.0.0.0", "--port", "8000"]
+          envFrom:
+          - secretRef:
+              name: mysql-user
+          volumeMounts:
+          - name: fastapi-pv
+            mountPath: /app/
+      volumes:
+        - name: fastapi-pv # Nom du volume persistant
+          persistentVolumeClaim:
+            claimName: fastapi-pvc # Nom du PVC à utiliser
